@@ -49,7 +49,8 @@ body {
 .links a:hover {
   text-decoration: underline;
 }
-.cv_container {
+/* تنسيق الحاوية لجعل الزر في المنتصف */
+.cv-container {
   display: flex;
   justify-content: center; /* توسيط الزر أفقياً */
   align-items: center;
@@ -57,26 +58,28 @@ body {
   margin-bottom: 30px;    /* مسافة تحت الزر لمنع التصاقه بالكارت */
   width: 100%;            /* التأكد من أخذ عرض الصفحة كاملاً للتوسيط */
 }
+
+/* تنسيق الزر نفسه */
 .download-btn {
   display: inline-flex;
   align-items: center;
-  background-color: #007bff; /* يمكنك تغيير اللون ليناسب تصميمك */
+  background-color: #007bff;
   color: white !important;
-  padding: 8px 15px;
-  border-radius: 5px;
+  padding: 12px 25px;
+  border-radius: 8px;
   text-decoration: none;
   font-weight: bold;
-  font-size: 0.9rem;
-  margin-top: 10px;
-  transition: background 0.3s ease;
-}
-
-.download-btn i {
-  margin-right: 8px; /* مسافة بين الأيقونة والنص */
+  transition: transform 0.2s, background 0.3s;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* ظل خفيف لإعطاء مظهر احترافي */
 }
 
 .download-btn:hover {
   background-color: #0056b3;
+  transform: translateY(-2px); /* حركة بسيطة عند التمرير بالماوس */
+}
+
+.download-btn i {
+  margin-right: 10px;
 }
 
 .card {
@@ -112,6 +115,7 @@ footer {
   font-size: 0.9rem;
   margin-top: 30px;
 }
+
 
 
 
