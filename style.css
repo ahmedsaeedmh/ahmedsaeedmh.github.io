@@ -49,7 +49,14 @@ body {
 .links a:hover {
   text-decoration: underline;
 }
-
+.cv-container {
+  display: flex;
+  justify-content: center; /* توسيط الزر أفقياً */
+  align-items: center;
+  margin-top: 20px;       /* مسافة فوق الزر عن الـ Hero */
+  margin-bottom: 30px;    /* مسافة تحت الزر لمنع التصاقه بالكارت */
+  width: 100%;            /* التأكد من أخذ عرض الصفحة كاملاً للتوسيط */
+}
 .download-btn {
   display: inline-flex;
   align-items: center;
@@ -105,4 +112,5 @@ footer {
   font-size: 0.9rem;
   margin-top: 30px;
 }
+
 
