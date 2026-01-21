@@ -50,7 +50,7 @@ body {
   text-decoration: underline;
 }
 /* تنسيق الحاوية لجعل الزر في المنتصف */
-.cv-container {
+.cv_container {
   display: flex;
   justify-content: center; /* توسيط الزر أفقياً */
   align-items: center;
@@ -115,6 +115,7 @@ footer {
   font-size: 0.9rem;
   margin-top: 30px;
 }
+
 
 
 
