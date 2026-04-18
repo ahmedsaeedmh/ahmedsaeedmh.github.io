@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Quantum Hydrogen Atom: Interactive Orbital Simulator | ψₙₗₘ Wavefunction</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', 'Poppins', 'Roboto', sans-serif;
+        }
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            padding: 12px 20px;
+            border-radius: 16px;
+            border-left: 4px solid #00aaff;
+            pointer-events: none;
+            z-index: 10;
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            font-weight: 500;
+        }
+        #info h1 {
+            margin: 0 0 4px;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+        }
+        #info p {
+            margin: 0;
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(20,20,40,0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            padding: 16px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 20;
+            font-family: monospace;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+            pointer-events: auto;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background: rgba(0,0,0,0.5);
+            padding: 8px 14px;
+            border-radius: 20px;
+            min-width: 160px;
+        }
+        .control-group label {
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            color: #aaffff;
+            font-weight: bold;
+        }
+        select, button {
+            background: #1e2a3a;
+            color: white;
+            border: 1px solid #3a6ea5;
+            padding: 8px 12px;
+            border-radius: 28px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        select:hover, button:hover {
+            background: #2c4c6e;
+            border-color: #88ccff;
+        }
+        .energy-panel {
+            background: #0a0e1a;
+            padding: 5px 15px;
+            border-radius: 40px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #ffd966;
+            font-size: 1rem;
+        }
+        .status {
+            font-size: 0.75rem;
+            color: #ccc;
+            margin-left: auto;
+        }
+        @media (max-width: 800px) {
+            .control-group { min-width: 120px; }
+            #controls { flex-direction: column; align-items: stretch; }
+        }
+        button {
+            background: #3a6ea5;
+            font-weight: bold;
+        }
+        a {
+            color: #aaa;
+            text-decoration: none;
+        }
+        .note {
+            font-size: 0.7rem;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <h1>⚛️ Hydrogen Atom · Quantum Orbital Simulator</h1>
+        <p>|ψₙₗₘ|² probability density | real orbitals | interactive 3D point cloud | <span id="currentEnergy">E = -13.6 eV</span></p>
+    </div>
+    <div id="controls">
+        <div class="control-group">
+            <label>🌀 ORBITAL (n,l,m)</label>
+            <select id="orbitalSelect">
+                <option value="1s">1s (n=1, l=0)</option>
+                <option value="2s">2s (n=2, l=0)</option>
+                <option value="2px">2pₓ (n=2, l=1, m=±1 comb.)</option>
+                <option value="2py">2pᵧ (n=2, l=1, m=±1 comb.)</option>
+                <option value="2pz">2p₂ (n=2, l=1, m=0)</option>
+                <option value="3s">3s (n=3, l=0)</option>
+                <option value="3px">3pₓ (n=3, l=1)</option>
+                <option value="3py">3pᵧ (n=3, l=1)</option>
+                <option value="3pz">3p₂ (n=3, l=1)</option>
+                <option value="3dxy">3dₓᵧ (n=3, l=2)</option>
+                <option value="3dxz">3dₓ₂ (n=3, l=2)</option>
+                <option value="3dyz">3dᵧ₂ (n=3, l=2)</option>
+                <option value="3dx2y2">3dₓ²⁻ᵧ² (n=3, l=2)</option>
+                <option value="3dz2">3d₂² (n=3, l=2)</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>✨ PARTICLE COUNT</label>
+            <select id="particleCountSelect">
+                <option value="8000">8k points (fast)</option>
+                <option value="15000" selected>15k points (balanced)</option>
+                <option value="25000">25k points (detailed)</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>🔘 POINT SIZE</label>
+            <input type="range" id="pointSize" min="0.03" max="0.18" step="0.002" value="0.07">
+        </div>
+        <button id="regenerateBtn">⟳ REGENERATE CLOUD</button>
+        <div class="energy-panel" id="energyDisplay">E = -13.60 eV</div>
+        <div class="status" id="statusMsg">✓ Ready · drag to rotate</div>
+    </div>
+
+    <!-- Import Three.js core and add-ons -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+        // --- Setup Scene ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x050b1a);
+        scene.fog = new THREE.FogExp2(0x050b1a, 0.008);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(5, 4, 8);
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        // CSS2DRenderer for labels
+        const labelRenderer = new CSS2DRenderer();
+        labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        labelRenderer.domElement.style.position = 'absolute';
+        labelRenderer.domElement.style.top = '0px';
+        labelRenderer.domElement.style.left = '0px';
+        labelRenderer.domElement.style.pointerEvents = 'none';
+        document.body.appendChild(labelRenderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.autoRotate = false;
+        controls.enableZoom = true;
+        controls.zoomSpeed = 1.2;
+        controls.rotateSpeed = 1.0;
+        controls.target.set(0, 0, 0);
+
+        // --- Helper: coordinate axes & nucleus ---
+        // Add a subtle glowing nucleus
+        const nucleusMat = new THREE.MeshStandardMaterial({ color: 0xffaa66, emissive: 0x442200, roughness: 0.3, metalness: 0.7 });
+        const nucleus = new THREE.Mesh(new THREE.SphereGeometry(0.12, 32, 16), nucleusMat);
+        scene.add(nucleus);
+        
+        // Add a faint transparent helper sphere (reference)
+        const refSphere = new THREE.Mesh(
+            new THREE.SphereGeometry(1.2, 32, 16),
+            new THREE.MeshBasicMaterial({ color: 0x3388ff, wireframe: true, transparent: true, opacity: 0.08 })
+        );
+        scene.add(refSphere);
+        
+        // Add ambient and directional lighting for nucleus
+        const ambientLight = new THREE.AmbientLight(0x222222);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(1, 2, 1);
+        scene.add(dirLight);
+        const backLight = new THREE.PointLight(0x4466cc, 0.3);
+        backLight.position.set(-2, 1, -3);
+        scene.add(backLight);
+        
+        // Stars background effect (tiny particles)
+        const starGeometry = new THREE.BufferGeometry();
+        const starCount = 800;
+        const starPos = [];
+        for (let i = 0; i < starCount; i++) {
+            starPos.push((Math.random() - 0.5) * 200);
+            starPos.push((Math.random() - 0.5) * 100);
+            starPos.push((Math.random() - 0.5) * 80 - 40);
+        }
+        starGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(starPos), 3));
+        const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.08, transparent: true, opacity: 0.5 });
+        const stars = new THREE.Points(starGeometry, starMat);
+        scene.add(stars);
+        
+        // --- Quantum Mechanics: Radial wavefunctions R_nl (atomic units, a0=1) ---
+        // Radial functions for n=1,2,3 (normalized)
+        function R_10(r) {
+            return 2.0 * Math.exp(-r);
+        }
+        function R_20(r) {
+            const rho = r / 2;
+            return (1.0 / Math.sqrt(2)) * (1 - rho) * Math.exp(-rho);
+        }
+        function R_21(r) {
+            const rho = r / 2;
+            return (1.0 / (2 * Math.sqrt(6))) * rho * Math.exp(-rho);
+        }
+        function R_30(r) {
+            const rho = r / 3;
+            const norm = 2.0 / (81 * Math.sqrt(3 * Math.PI)); // combined with angular later but factor adjusted for density
+            // normalized radial part sqrt( (2/(3))^3 * (2)!/(2*3*(3)! ) ) * ... but we compute exact:
+            // Standard: R_30 = (2/ (81√3)) * (27 - 18ρ + 2ρ²) e^{-ρ}, ρ=r/3
+            const poly = 27 - 18 * rho + 2 * rho * rho;
+            return (2.0 / (81.0 * Math.sqrt(3))) * poly * Math.exp(-rho);
+        }
+        function R_31(r) {
+            const rho = r / 3;
+            const norm = 4.0 / (81.0 * Math.sqrt(6));
+            const poly = 6 - rho;
+            return norm * rho * poly * Math.exp(-rho);
+        }
+        function R_32(r) {
+            const rho = r / 3;
+            const norm = 4.0 / (81.0 * Math.sqrt(30));
+            return norm * rho * rho * Math.exp(-rho);
+        }
+        
+        // Angular functions (real spherical harmonics up to l=2)
+        function angular_1s() { return 1.0 / Math.sqrt(4 * Math.PI); }
+        function angular_2s() { return 1.0 / Math.sqrt(4 * Math.PI); }
+        function angular_2pz(theta) { return Math.sqrt(3/(4*Math.PI)) * Math.cos(theta); }
+        function angular_2px(theta, phi) { return Math.sqrt(3/(4*Math.PI)) * Math.sin(theta) * Math.cos(phi); }
+        function angular_2py(theta, phi) { return Math.sqrt(3/(4*Math.PI)) * Math.sin(theta) * Math.sin(phi); }
+        // d orbitals (l=2)
+        function angular_dz2(theta) { return Math.sqrt(5/(16*Math.PI)) * (3*Math.cos(theta)*Math.cos(theta) - 1); }
+        function angular_dxz(theta, phi) { return Math.sqrt(15/(4*Math.PI)) * Math.sin(theta)*Math.cos(theta)*Math.cos(phi); }
+        function angular_dyz(theta, phi) { return Math.sqrt(15/(4*Math.PI)) * Math.sin(theta)*Math.cos(theta)*Math.sin(phi); }
+        function angular_dxy(theta, phi) { return Math.sqrt(15/(16*Math.PI)) * Math.sin(theta)*Math.sin(theta) * Math.sin(2*phi); }
+        function angular_dx2y2(theta, phi) { return Math.sqrt(15/(16*Math.PI)) * Math.sin(theta)*Math.sin(theta) * Math.cos(2*phi); }
+        
+        // Map orbital names to radial & angular functions, plus metadata
+        const orbitals = {
+            '1s': { radial: R_10, angular: (th,ph) => angular_1s(), n:1, l:0, energy: -13.6 },
+            '2s': { radial: R_20, angular: (th,ph) => angular_2s(), n:2, l:0, energy: -3.4 },
+            '2px': { radial: R_21, angular: (th,ph) => angular_2px(th,ph), n:2, l:1, energy: -3.4 },
+            '2py': { radial: R_21, angular: (th,ph) => angular_2py(th,ph), n:2, l:1, energy: -3.4 },
+            '2pz': { radial: R_21, angular: (th,ph) => angular_2pz(th), n:2, l:1, energy: -3.4 },
+            '3s': { radial: R_30, angular: (th,ph) => angular_1s(), n:3, l:0, energy: -1.5111 },
+            '3px': { radial: R_31, angular: (th,ph) => angular_2px(th,ph), n:3, l:1, energy: -1.5111 },
+            '3py': { radial: R_31, angular: (th,ph) => angular_2py(th,ph), n:3, l:1, energy: -1.5111 },
+            '3pz': { radial: R_31, angular: (th,ph) => angular_2pz(th), n:3, l:1, energy: -1.5111 },
+            '3dxy': { radial: R_32, angular: (th,ph) => angular_dxy(th,ph), n:3, l:2, energy: -1.5111 },
+            '3dxz': { radial: R_32, angular: (th,ph) => angular_dxz(th,ph), n:3, l:2, energy: -1.5111 },
+            '3dyz': { radial: R_32, angular: (th,ph) => angular_dyz(th,ph), n:3, l:2, energy: -1.5111 },
+            '3dx2y2': { radial: R_32, angular: (th,ph) => angular_dx2y2(th,ph), n:3, l:2, energy: -1.5111 },
+            '3dz2': { radial: R_32, angular: (th,ph) => angular_dz2(th), n:3, l:2, energy: -1.5111 }
+        };
+        
+        // Compute probability density |ψ|^2 for given orbital at (x,y,z)
+        function computeDensity(x, y, z, orbKey) {
+            const orb = orbitals[orbKey];
+            if (!orb) return 0;
+            const r = Math.sqrt(x*x + y*y + z*z);
+            if (r < 1e-6) return 0; // avoid singularity
+            
+            const theta = Math.acos(Math.min(0.999999, Math.max(-0.999999, z / r)));
+            const phi = Math.atan2(y, x);
+            const radialVal = orb.radial(r);
+            const angularVal = orb.angular(theta, phi);
+            const psi = radialVal * angularVal;
+            return psi * psi; // |ψ|^2 probability density
+        }
+        
+        // Estimate max density for efficient rejection sampling
+        function estimateMaxDensity(orbKey, samples = 4000, bound = 9.0) {
+            let maxD = 0;
+            for (let i = 0; i < samples; i++) {
+                const x = (Math.random() - 0.5) * 2 * bound;
+                const y = (Math.random() - 0.5) * 2 * bound;
+                const z = (Math.random() - 0.5) * 2 * bound;
+                const d = computeDensity(x, y, z, orbKey);
+                if (d > maxD) maxD = d;
+            }
+            return maxD * 1.05 + 1e-8;
+        }
+        
+        // Generate point cloud using rejection sampling
+        function generatePointCloud(orbKey, targetPoints, boundsRadius = 9.5) {
+            return new Promise((resolve) => {
+                const positions = [];
+                const colors = [];
+                // estimate density maximum dynamically
+                const maxDensity = estimateMaxDensity(orbKey, 5000, boundsRadius);
+                let accepted = 0;
+                const safety = 300000; // max attempts
+                let attempts = 0;
+                
+                // color mapping: use phase-like hue based on sign of ψ (interesting visual)
+                // but for simplicity we map radial distance to cool-warm, plus angular hint
+                while (accepted < targetPoints && attempts < safety) {
+                    const x = (Math.random() - 0.5) * 2 * boundsRadius;
+                    const y = (Math.random() - 0.5) * 2 * boundsRadius;
+                    const z = (Math.random() - 0.5) * 2 * boundsRadius;
+                    const density = computeDensity(x, y, z, orbKey);
+                    if (density === 0) continue;
+                    const prob = density / maxDensity;
+                    if (Math.random() < prob) {
+                        // accept point
+                        positions.push(x, y, z);
+                        // Color: encode radial distance + angular region for artistic effect
+                        const rVal = Math.sqrt(x*x + y*y + z*z);
+                        const hue = (Math.atan2(y, x) + Math.PI) / (2*Math.PI); // phi based
+                        const sat = 0.7;
+                        let lightness = 0.5 + 0.4 * Math.sin(rVal * 1.5);
+                        // adjust per orbital type: for p/d orbitals, add azimuthal variation
+                        const orbLow = orbKey.toLowerCase();
+                        if (orbLow.includes('p') || orbLow.includes('d')) {
+                            const angleFactor = Math.abs(Math.sin(Math.atan2(y, x) * 2));
+                            lightness = 0.5 + 0.3 * angleFactor;
+                        }
+                        // Use HSL to RGB: blue to magenta/purple core, hot spots for high density
+                        const color = new THREE.Color().setHSL(hue, sat, 0.55 + lightness * 0.2);
+                        colors.push(color.r, color.g, color.b);
+                        accepted++;
+                    }
+                    attempts++;
+                }
+                console.log(`Generated ${accepted} points for ${orbKey} (attempts: ${attempts})`);
+                const geometry = new THREE.BufferGeometry();
+                geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+                geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+                resolve(geometry);
+            });
+        }
+        
+        // --- Main Point Cloud Management ---
+        let currentPointsMesh = null;
+        let currentOrbital = '2pz';
+        
+        async function updateOrbitalVisualization() {
+            const select = document.getElementById('orbitalSelect');
+            const orbKey = select.value;
+            const pointCount = parseInt(document.getElementById('particleCountSelect').value, 10);
+            const statusDiv = document.getElementById('statusMsg');
+            statusDiv.innerHTML = '⏳ Generating quantum cloud...';
+            
+            // Remove old points
+            if (currentPointsMesh) scene.remove(currentPointsMesh);
+            
+            // Generate new geometry
+            const geometry = await generatePointCloud(orbKey, pointCount, 10.0);
+            const pointSize = parseFloat(document.getElementById('pointSize').value);
+            const material = new THREE.PointsMaterial({ size: pointSize, vertexColors: true, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending });
+            const pointsObj = new THREE.Points(geometry, material);
+            scene.add(pointsObj);
+            currentPointsMesh = pointsObj;
+            
+            // Update energy display
+            const orbData = orbitals[orbKey];
+            const energy = orbData.energy;
+            document.getElementById('energyDisplay').innerHTML = `E = ${energy.toFixed(3)} eV`;
+            document.getElementById('currentEnergy').innerHTML = `E = ${energy.toFixed(3)} eV`;
+            
+            statusDiv.innerHTML = `✓ ${orbKey.toUpperCase()} | ${geometry.attributes.position.count} points | |ψ|² sampling`;
+        }
+        
+        // Regen with current settings
+        function refreshOrbital() {
+            updateOrbitalVisualization();
+        }
+        
+        // Listen to UI
+        document.getElementById('orbitalSelect').addEventListener('change', () => refreshOrbital());
+        document.getElementById('particleCountSelect').addEventListener('change', () => refreshOrbital());
+        document.getElementById('regenerateBtn').addEventListener('click', () => refreshOrbital());
+        document.getElementById('pointSize').addEventListener('input', (e) => {
+            if (currentPointsMesh) {
+                currentPointsMesh.material.size = parseFloat(e.target.value);
+            }
+        });
+        
+        // --- Simple axis helper & label (CSS2D) ---
+        const axisHelper = new THREE.AxesHelper(4.5);
+        axisHelper.material.transparent = true;
+        axisHelper.material.opacity = 0.18;
+        scene.add(axisHelper);
+        
+        // Add coordinate labels
+        function makeLabel(text, position, color = '#aaa') {
+            const div = document.createElement('div');
+            div.textContent = text;
+            div.style.color = color;
+            div.style.fontSize = '14px';
+            div.style.fontWeight = 'bold';
+            div.style.textShadow = '0 0 5px black';
+            div.style.background = 'rgba(0,0,0,0.5)';
+            div.style.padding = '2px 6px';
+            div.style.borderRadius = '12px';
+            const label = new CSS2DObject(div);
+            label.position.copy(position);
+            scene.add(label);
+        }
+        makeLabel('x', new THREE.Vector3(4.8, 0, 0), '#ff8888');
+        makeLabel('y', new THREE.Vector3(0, 4.8, 0), '#88ff88');
+        makeLabel('z', new THREE.Vector3(0, 0, 4.8), '#8888ff');
+        
+        // Add small glowing rings effect
+        const ringGeo = new THREE.TorusGeometry(1.8, 0.02, 64, 200);
+        const ringMat = new THREE.MeshStandardMaterial({ color: 0x44aaff, emissive: 0x115588 });
+        const ringX = new THREE.Mesh(ringGeo, ringMat);
+        ringX.rotation.x = Math.PI / 2;
+        scene.add(ringX);
+        const ringY = new THREE.Mesh(ringGeo, ringMat);
+        ringY.rotation.z = Math.PI / 2;
+        scene.add(ringY);
+        const ringZ = new THREE.Mesh(ringGeo, ringMat);
+        scene.add(ringZ);
+        
+        // Title CSS2D label
+        const titleDiv = document.createElement('div');
+        titleDiv.textContent = '⚛️ ψₙₗₘ(r,θ,φ) · Hydrogen Wavefunction';
+        titleDiv.style.color = '#ccddff';
+        titleDiv.style.fontSize = '12px';
+        titleDiv.style.fontFamily = 'monospace';
+        titleDiv.style.background = 'rgba(0,0,0,0.5)';
+        titleDiv.style.padding = '4px 12px';
+        titleDiv.style.borderRadius = '20px';
+        titleDiv.style.backdropFilter = 'blur(4px)';
+        const titleLabel = new CSS2DObject(titleDiv);
+        titleLabel.position.set(-3, 4.2, 0);
+        scene.add(titleLabel);
+        
+        // Animate subtle nucleus pulsation and rings
+        let time = 0;
+        
+        // Also animate star field slowly
+        function animateStars() {
+            stars.rotation.y += 0.0005;
+            stars.rotation.x += 0.0003;
+        }
+        
+        // initial load
+        updateOrbitalVisualization().then(() => {
+            document.getElementById('statusMsg').innerHTML = '✅ Ready | Drag to explore orbital shapes';
+        });
+        
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.012;
+            // Pulsate nucleus slightly
+            const scale = 1 + Math.sin(time * 8) * 0.04;
+            nucleus.scale.set(scale, scale, scale);
+            // rotate rings gently
+            ringX.rotation.z += 0.003;
+            ringY.rotation.x += 0.002;
+            ringZ.rotation.y += 0.004;
+            animateStars();
+            
+            controls.update(); // update orbit
+            renderer.render(scene, camera);
+            labelRenderer.render(scene, camera);
+        }
+        
+        animate();
+        
+        // Handle window resize
+        window.addEventListener('resize', onWindowResize, false);
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        // Brief intro console log
+        console.log('Hydrogen Atom Simulator | Quantum Mechanics | Real orbitals via |ψ|² sampling');
+    </script>
+</body>
+</html>
